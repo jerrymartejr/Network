@@ -1,4 +1,6 @@
 # Network
+### Video Demo: https://youtu.be/6lr725kqLVA
+<hr>
 Twitter-like social network website for making posts and following users
 
 ## Technologies Used
