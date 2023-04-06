@@ -1,0 +1,84 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h1>All Posts</h1>
+    {% if user.is_authenticated %}
+    <div class="container">
+        <form action="{% url 'new_post' %}" method="post">
+            {% csrf_token %}
+            <label for="new_post">New Post</label>
+            <br>
+            <textarea name="new_post" id="new_post" cols="100" rows="2"></textarea>
+            <br>
+            <input type="submit" value="Post">
+        </form>
+    </div>
+    {% endif %}
+
+    {% for post in page_obj %}
+    <div class="post">
+        <a href="{% url 'profile' post.user.id %}"><h3>{{ post.user }}</h3></a>
+        <div id="post">
+            <p>{{ post.body }}</p>
+            <p><small>{{ post.timestamp }}</small></p>
+            <!--ensure that the logged user is the only one that can edit their post-->
+            {% if user.is_authenticated and user == post.user %}
+            <button class="edit_button">Edit Post</button>
+            {% endif %}
+        </div>
+        <!--ensure that the logged user is the only one that can edit their post-->
+        {% if user.is_authenticated and user == post.user %}
+        <div id="edit_post">
+            <form action="{% url 'edit_post' %}" method="post" id="save">
+                {% csrf_token %}
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <textarea name="edited_post" id="edited_post" cols="100" rows="2">{{ post.body }}</textarea>
+                <br>
+                <input type="submit" value="Save">
+            </form>
+        </div>
+        {% endif %}
+
+        <b>{{ post.likes.count }}</b>
+
+        {% if user.is_authenticated %}
+            {% if post in liked_posts %}
+            <form action="{% url 'unlike' %}" method="post" id="unlike">
+                {% csrf_token %}
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <input type="submit" value="Unlike">
+            </form>
+            {% else %}
+            <form action="{% url 'like' %}" method="post" id="like">
+                {% csrf_token %}
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <input type="submit" value="Like">
+            </form>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+    
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/main.js' %}" defer></script>
+{% endblock %}
